@@ -77,4 +77,8 @@ public class PassRateColumn extends ListViewColumn {
 
         return passRate;
     }
+
+    public String getLastReportHtmlPath(Job job) {
+        return job.getAbsoluteUrl() + "Report" + "/" + "report.html";
+    }
 }
