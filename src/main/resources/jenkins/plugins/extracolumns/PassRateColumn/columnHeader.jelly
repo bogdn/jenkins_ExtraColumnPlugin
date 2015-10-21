@@ -25,6 +25,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
 
-   <th>${%Pass Rate}</th>
+   <th style="text-align:center;">${%Pass Rate}</th>
 
 </j:jelly>
