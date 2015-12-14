@@ -36,10 +36,10 @@ import java.nio.file.Paths;
 
 import static java.io.File.separator;
 
-public class PassRateColumn extends ListViewColumn {
+public class TodaysBestPassRateColumn extends ListViewColumn {
 
     @DataBoundConstructor
-    public PassRateColumn() {
+    public TodaysBestPassRateColumn() {
         super();
     }
 
@@ -53,22 +53,22 @@ public class PassRateColumn extends ListViewColumn {
 
         @Override
         public String getDisplayName() {
-            return Messages.PassRateColumn_DisplayName();
+            return Messages.TodaysBestPassRateColumn_DisplayName();
         }
     }
 
-    public String getPassRate(Job job) {
+    public String getTodaysBestPassRate(Job job) {
         String jsonString = null;
         JSONObject jsonObj = null;
         String filePath = null;
         String passRate = null;
 
         try {
-            if (!job.getIconColor().isAnimated()) {
+            if (job.isBuilding()) {
                 filePath = job.getLastBuild().getRootDir().getAbsolutePath() +
                         separator + "htmlreports" + separator + "Report" + separator + "report.json";
             } else {
-                Run lastNotBuildingNowJob = job.getBuilds().getLastBuild().getPreviousBuiltBuild();
+                Run lastNotBuildingNowJob = (Run) job.getBuilds().get(job.getBuilds().size() - 1);
                 filePath = lastNotBuildingNowJob.getRootDir().getAbsolutePath() +
                         separator + "htmlreports" + separator + "Report" + separator + "report.json";
             }
@@ -81,6 +81,7 @@ public class PassRateColumn extends ListViewColumn {
         } catch (Exception e) {
             return "N/A";
         }
+
         return passRate;
     }
 
