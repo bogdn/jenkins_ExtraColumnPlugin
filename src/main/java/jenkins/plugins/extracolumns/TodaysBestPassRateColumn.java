@@ -34,6 +34,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -119,7 +121,9 @@ public class TodaysBestPassRateColumn extends ListViewColumn {
 
     public boolean isTodayDate(Date runDate) {
         Date currentDate = new Date();
-        return (currentDate.getDay() - runDate.getDay()) <= 1 && runDate.getYear() ==
-                currentDate.getYear() && runDate.getMonth() == currentDate.getMonth();
+        LocalDate localRunDate = runDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate localCurrentDate = currentDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate increasedRunDate = localRunDate.plusDays(2);
+        return increasedRunDate.isAfter(localCurrentDate);
     }
 }
