@@ -26,6 +26,7 @@ package jenkins.plugins.extracolumns;
 import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
+import hudson.util.RunList;
 import hudson.views.ListViewColumn;
 import hudson.views.ListViewColumnDescriptor;
 import org.json.JSONObject;
@@ -33,10 +34,15 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import static java.io.File.separator;
 
 public class TodaysBestPassRateColumn extends ListViewColumn {
+
+    public String reportHtmlPath;
 
     @DataBoundConstructor
     public TodaysBestPassRateColumn() {
@@ -48,7 +54,7 @@ public class TodaysBestPassRateColumn extends ListViewColumn {
 
         @Override
         public boolean shownByDefault() {
-            return true;
+            return false;
         }
 
         @Override
@@ -58,34 +64,62 @@ public class TodaysBestPassRateColumn extends ListViewColumn {
     }
 
     public String getTodaysBestPassRate(Job job) {
-        String jsonString = null;
-        JSONObject jsonObj = null;
-        String filePath = null;
-        String passRate = null;
 
         try {
-            if (job.isBuilding()) {
-                filePath = job.getLastBuild().getRootDir().getAbsolutePath() +
-                        separator + "htmlreports" + separator + "Report" + separator + "report.json";
-            } else {
-                Run lastNotBuildingNowJob = (Run) job.getBuilds().get(job.getBuilds().size() - 1);
-                filePath = lastNotBuildingNowJob.getRootDir().getAbsolutePath() +
-                        separator + "htmlreports" + separator + "Report" + separator + "report.json";
-            }
-
-            jsonString = new String(Files.readAllBytes(Paths.get(filePath)));
-
-            jsonObj = new JSONObject(jsonString);
-            passRate = jsonObj.getJSONObject("suiteData").get("suitePassRate") + "%";
-
+            return getBestPassRate(getTodaysRuns(job));
         } catch (Exception e) {
-            return "N/A";
+            return "0%";
+        }
+    }
+
+    public List<Run> getTodaysRuns(Job job) throws Exception {
+        List<Run> todaysRuns = new ArrayList<Run>();
+        RunList allRuns = job.getBuilds();
+        for (int i = 0; i < allRuns.size(); i++) {
+            Run run = (Run) allRuns.get(i);
+            if (isTodayDate(run.getTime())) {
+                todaysRuns.add(run);
+            }
+        }
+        return todaysRuns;
+    }
+
+    public String getBestPassRate(List<Run> runs) {
+        String bestRunPassRate = "0";
+
+        try {
+            for (Run run : runs) {
+                if (Float.parseFloat(getPassRateFromRun(run)) > Float.parseFloat(bestRunPassRate)) {
+                    bestRunPassRate = getPassRateFromRun(run);
+                }
+            }
+        } catch (Exception e) {
+            return "0%";
         }
 
+        return bestRunPassRate + "%";
+    }
+
+    public String getPassRateFromRun(Run run) {
+        String jsonPath = null;
+        String passRate = "0";
+        String jsonString = null;
+        JSONObject jsonObj = null;
+        try {
+            jsonPath = run.getRootDir().getAbsolutePath() +
+                    separator + "htmlreports" + separator + "Report" + separator + "report.json";
+            jsonString = new String(Files.readAllBytes(Paths.get(jsonPath)));
+            jsonObj = new JSONObject(jsonString);
+            passRate = jsonObj.getJSONObject("suiteData").get("suitePassRate").toString();
+        } catch (Exception e) {
+            return "0";
+        }
         return passRate;
     }
 
-    public String getLastReportHtmlPath(Job job) {
-        return job.getAbsoluteUrl() + "Report" + "/" + "report.html";
+    public boolean isTodayDate(Date runDate) {
+        Date currentDate = new Date();
+        return (currentDate.getDay() - runDate.getDay()) <= 1 && runDate.getYear() ==
+                currentDate.getYear() && runDate.getMonth() == currentDate.getMonth();
     }
 }

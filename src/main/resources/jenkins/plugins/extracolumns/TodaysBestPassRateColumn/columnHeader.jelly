@@ -25,6 +25,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
 
-   <th style="text-align:center;">${%Todays Best Pass Rate}</th>
+   <th title="This column shows the best pass rate from yesterday" style="text-align:center;">${%Todays Best Pass Rate}</th>
 
 </j:jelly>
