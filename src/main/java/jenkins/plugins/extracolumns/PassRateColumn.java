@@ -48,7 +48,7 @@ public class PassRateColumn extends ListViewColumn {
 
         @Override
         public boolean shownByDefault() {
-            return false;
+            return true;
         }
 
         @Override
